@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+  <title>Turtle Brix</title>
+</head>
+<body>
+  <h1>This is the Web App</h1>
+
+  <h2>LED 1:</h2>
+  <input id="led-one" type="range" min="100" max="1000" step="100" value="500">
+
+
+  <h2>LED 2:</h2>
+  <input id="led-two" type="range" min="100" max="1000" step="100" value="500">
+
+  <!-- Include the client socket library -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Include the client interaction code -->
+  <script src="./client.js"></script>
+</body>
+</html>
