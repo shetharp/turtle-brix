@@ -1,30 +1,48 @@
 (function() {
     var socket = io.connect(window.location.hostname + ':' + 3000);
-    var led0 = document.getElementById('person0');
-    var led1 = document.getElementById('person1');
-    var led2 = document.getElementById('person2');
-    var led3 = document.getElementById('person3');
-    var led4 = document.getElementById('person4');
+    let NUM_LEDS = 5;
+    var personElems = []; // Array of element of people
+    var personCount = {}; // Object with key => element IDs and value => count
+    var resetButton;
 
-    function emitValue(personID, elem) {
-        socket.emit('updatePerson', {
-            led: personID,
-            value: elem.target.value
-        });
+    for (var i = 0; i < NUM_LEDS; i++) {
+      personElems.push(document.getElementById('person' + i));
+      personElems[i].addEventListener('change', emitUpdateCounter.bind(null, 'person' + i));
+      personCount[personElems[i].id] = 0;
     }
 
-    led0.addEventListener('change', emitValue.bind(null, 'person0'));
-    led1.addEventListener('change', emitValue.bind(null, 'person1'));
-    led2.addEventListener('change', emitValue.bind(null, 'person2'));
-    led3.addEventListener('change', emitValue.bind(null, 'person3'));
-    led4.addEventListener('change', emitValue.bind(null, 'person4'));
+    resetButton = document.getElementById('reset-people');
+    resetButton.addEventListener('click', emitResetCounter.bind());
+
+    // Emit an event to the Board to
+    function emitUpdateCounter(personID, elem) {
+      personCount[personID] = +(elem.target.value);
+      socket.emit('updatePerson', personCount);
+    }
+
+    function emitResetCounter() {
+      for (var i = 0; i < NUM_LEDS; i++) {
+        personElems[i].value = 0;
+        personCount["person" + i] = 0;
+      }
+      socket.emit('updatePerson', personCount);
+    }
 
     socket.on('connect', function(data) {
         socket.emit('join', 'Client is connected!');
     });
 
     socket.on('updatePerson', function(data) {
-        var selectedPersonID = data.led;
-        document.getElementById(selectedPersonID).value = data.value;
+      // The data variable is what is passed by socket.emit()
+      console.log("[!!] This is happening on updatePerson");
+      console.log(data);
+      console.log("==========");
+      for (var personID in data) {
+        if (data.hasOwnProperty(personID)) {
+          document.getElementById(personID).value = data[personID];
+        }
+      }
     });
+
+    socket.on('reset')
 }());

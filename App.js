@@ -32,7 +32,8 @@ five.Board().on('ready', function() {
   const LED_OFF = "off"; // keyword for led status off
   const LED_ON = "on"; // keyword for led status on
   const LED_BLINK = "blink"; // keyword for led status blink
-  let LED = []; // array of led pin mappings
+  const STATE_OFF = { leds: ["off", "off", "off", "off", "off"] };
+  let LED = []; // array of led pin
   let state = { leds: [] }; // state of board components
 
   for (var i = 0; i < NUM_LEDS; i++) {
@@ -54,14 +55,17 @@ five.Board().on('ready', function() {
     console.log(newState);
     console.log();
     for (var i = 0; i < NUM_LEDS; i++) {
-      if (newState.leds[i] === LED_OFF) { LED[i].off(); }
+      console.log("[!!] Setting state of LED" + i + " to " + newState.leds[i]);
+      if (newState.leds[i] === LED_OFF) {
+        LED[i].stop();
+        LED[i].off(); }
       if (newState.leds[i] === LED_ON) { LED[i].on(); }
       if (newState.leds[i] === LED_BLINK) { LED[i].blink(500); }
     }
   }
 
   /* ----------------------------------------------------------------------
-    Websocket Connection with Client
+    Once a web socket connection has been made with the frontend client
   ---------------------------------------------------------------------- */
   io.on('connection', function(client){
     client.on('join', function(handshake){
@@ -71,29 +75,38 @@ five.Board().on('ready', function() {
     // Set initial state
     setState(state);
 
+    // When a user disconnects from the frontend client
+    client.on('disconnect', function () {
+      console.log('A user disconnected');
+      state = STATE_OFF;
+      setState(state);
+    });
+
     // The 'updatePerson' event is triggered when a person's counter is changed
     // Every time a 'updatePerson' event is sent, listen to it and get its new
     // value. Then, translate that value into an LED state.
     client.on('updatePerson', function(data){
       var newLedState;
-      switch (+data.value) {
-        case 0:
-          newLedState = LED_OFF;
-          break;
-        case 1:
-        case 2:
-          newLedState = LED_ON;
-          console.log("WE SET THE LED TO ON!");
-          break;
-        case 3:
-          newLedState = LED_BLINK;
-        default:
-          console.log("Default data.value case");
-          newLedState = LED_BLINK;
-      }
-
+      console.log("[!!] The incoming updated data is:");
+      console.log(data);
+      console.log()
       for (var i = 0; i < NUM_LEDS; i++) {
-        state.leds[i] = (data.led === ('person' + i)) ? newLedState : state.leds[i];
+        switch (data['person' + i]) {
+          case 0:
+            newLedState = LED_OFF;
+            break;
+          case 1:
+          case 2:
+            newLedState = LED_ON;
+            console.log("WE SET THE LED TO ON!");
+            break;
+          case 3:
+            newLedState = LED_BLINK;
+          default:
+            console.log("Default data.value case");
+            newLedState = LED_BLINK;
+        }
+        state.leds[i] = newLedState;
       }
 
       // Set the new board state
