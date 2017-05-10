@@ -32,14 +32,16 @@ five.Board().on('ready', function() {
   const LED_OFF = "off"; // keyword for led status off
   const LED_ON = "on"; // keyword for led status on
   const LED_BLINK = "blink"; // keyword for led status blink
+  const LED_SUPERBLINK = "superBlink"; // keyword for led status superBlink
   const STATE_OFF = { leds: ["off", "off", "off", "off", "off"] };
+  const STATE_SUPERBLINK = { leds: ["superBlink", "superBlink", "superBlink", "superBlink", "superBlink"] };
   let LED = []; // array of led pin
   let state = { leds: [] }; // state of board components
 
   for (var i = 0; i < NUM_LEDS; i++) {
     // Map pins to digital inputs on the Board
     // Start the leds from pin 13 counting down
-    LED.push(new five.Led(13 - i));
+    LED.push(new five.Led(9 + i));
 
     // Set all LEDs to off by default
     state.leds.push(LED_OFF);
@@ -61,6 +63,7 @@ five.Board().on('ready', function() {
         LED[i].off(); }
       if (newState.leds[i] === LED_ON) { LED[i].on(); }
       if (newState.leds[i] === LED_BLINK) { LED[i].blink(500); }
+      if (newState.leds[i] === LED_SUPERBLINK) { LED[i].blink(250); }
     }
   }
 
@@ -96,12 +99,15 @@ five.Board().on('ready', function() {
             newLedState = LED_OFF;
             break;
           case 1:
-          case 2:
             newLedState = LED_ON;
             console.log("WE SET THE LED TO ON!");
             break;
-          case 3:
+          case 2:
             newLedState = LED_BLINK;
+            break;
+          case 9:
+            newLedState = LED_SUPERBLINK;
+            break;
           default:
             console.log("Default data.value case");
             newLedState = LED_BLINK;

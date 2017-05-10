@@ -13,6 +13,8 @@
 
     resetButton = document.getElementById('reset-people');
     resetButton.addEventListener('click', emitResetCounter.bind());
+    puzzleButton = document.getElementById('puzzle-people');
+    puzzleButton.addEventListener('click', emitPuzzleChallenge.bind());
 
     // Emit an event to the Board to
     function emitUpdateCounter(personID, elem) {
@@ -28,15 +30,20 @@
       socket.emit('updatePerson', personCount);
     }
 
+    function emitPuzzleChallenge() {
+      for (var i = 0; i < NUM_LEDS; i++) {
+        personElems[i].value = 9;
+        personCount["person" + i] = 9;
+      }
+      socket.emit('updatePerson', personCount);
+    }
+
     socket.on('connect', function(data) {
         socket.emit('join', 'Client is connected!');
     });
 
     socket.on('updatePerson', function(data) {
       // The data variable is what is passed by socket.emit()
-      console.log("[!!] This is happening on updatePerson");
-      console.log(data);
-      console.log("==========");
       for (var personID in data) {
         if (data.hasOwnProperty(personID)) {
           document.getElementById(personID).value = data[personID];
